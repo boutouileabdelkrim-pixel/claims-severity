@@ -3,10 +3,10 @@
 __pycache__/
 *.pyc
 
-# Data & Models
-data/
-models/
-mlruns/
+# Data & Models (ROOT only — anchored with /)
+/data/
+/models/
+/mlruns/
 
 # IDE
 .idea/
