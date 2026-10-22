@@ -1,0 +1,67 @@
+=== OpenML recon — freMTPL2 (Phase 2, Step 1) ===
+Thu Oct 22 11:30:51 PM UTC 2026
+
+Python:  3.11.17
+sklearn: 1.9.1
+
+--- data_id=41214 (expected: freMTPL2freq) ---
+  name:    freMTPL2freq
+  version: 1
+  target:  None
+  shape:   (678013, 12)
+  columns: ['IDpol', 'ClaimNb', 'Exposure', 'Area', 'VehPower', 'VehAge', 'DrivAge', 'BonusMalus', 'VehBrand', 'VehGas', 'Density', 'Region']
+  dtypes:
+    IDpol                float64
+    ClaimNb              int64
+    Exposure             float64
+    Area                 category
+    VehPower             int64
+    VehAge               int64
+    DrivAge              int64
+    BonusMalus           int64
+    VehBrand             category
+    VehGas               object
+    Density              int64
+    Region               category
+  head:
+   IDpol  ClaimNb  Exposure Area  VehPower  VehAge  DrivAge  BonusMalus VehBrand     VehGas  Density Region
+0    1.0        1      0.10    D         5       0       55          50      B12  'Regular'     1217    R82
+1    3.0        1      0.77    D         5       0       55          50      B12  'Regular'     1217    R82
+2    5.0        1      0.75    B         6       2       52          50      B12   'Diesel'       54    R22
+
+--- data_id=41215 (expected: freMTPL2sev) ---
+  name:    freMTPL2sev
+  version: 1
+  target:  None
+  shape:   (26639, 2)
+  columns: ['IDpol', 'ClaimAmount']
+  dtypes:
+    IDpol                int64
+    ClaimAmount          float64
+  head:
+     IDpol  ClaimAmount
+0     1552       995.20
+1  1010996      1128.12
+2  4024277      1851.11
+
+--- Sanity checks ---
+freq rows:           678,013
+freq cols:           12
+freq ClaimNb sum:    36,102
+freq Exposure sum:   358499
+freq with ClaimNb>0: 34,060 (5.02%)
+
+sev rows:            26,639
+sev cols:            2
+sev unique IDpol:    24,950
+sev ClaimAmount sum: 60,697,931
+
+sev rows per IDpol:  mean=1.068, max=66
+IDs with >1 claim:   1,379
+
+--- Merge check (the critical one) ---
+Naive join rows (freq x sev):        18,061,588,307   <-- EXPLOSION
+Rows after sev aggregated by IDpol:  678,013   <-- TARGET
+
+--- Conclusion ---
+OK: OpenML accessible, IDs correct, shapes match freMTPL2 expectations.
