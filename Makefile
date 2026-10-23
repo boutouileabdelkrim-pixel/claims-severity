@@ -4,7 +4,7 @@ UV := uv
 RUFF := uv run ruff
 PYTEST := uv run pytest
 
-.PHONY: help install sync lint format format-check test ci data validate processed eda clean
+.PHONY: help install sync lint format format-check test ci data validate processed eda features clean
 
 help:  ## Show available targets
 	@echo "Available targets:"
@@ -19,6 +19,7 @@ help:  ## Show available targets
 	@echo "  validate      Validate + clean + merge to data/processed/"
 	@echo "  processed     Alias for validate"
 	@echo "  eda           Print EDA report + save reports/phase3_eda.txt"
+	@echo "  features      Build train/val/test features parquets"
 	@echo "  clean         Remove caches and build artifacts"
 
 install: sync
@@ -48,6 +49,9 @@ validate processed:
 
 eda:
 	$(UV) run python -m scripts.eda_report
+
+features:
+	$(UV) run python -m scripts.build_features
 
 clean:
 	rm -rf .pytest_cache .ruff_cache htmlcov .coverage

@@ -1,0 +1,13 @@
+uv run python -m scripts.build_features
+INFO: Loaded merged: (678013, 14)
+INFO: Split: train=474609, val=101702, test=101702
+INFO: Cap threshold (p99.5 of train severity): 35095.53 EUR
+INFO: Wrote /home/loranos/projects/claims-severity/data/features/train.parquet: (474609, 23)
+INFO: Wrote /home/loranos/projects/claims-severity/data/features/val.parquet: (101702, 23)
+INFO: Wrote /home/loranos/projects/claims-severity/data/features/test.parquet: (101702, 23)
+
+=== Feature build summary ===
+Cap threshold:           35,095.53 EUR
+train : rows=474,609  freq_pos=23,842  sev_pos=17,417
+val   : rows=101,702  freq_pos= 5,109  sev_pos= 3,755
+test  : rows=101,702  freq_pos= 5,109  sev_pos= 3,772
