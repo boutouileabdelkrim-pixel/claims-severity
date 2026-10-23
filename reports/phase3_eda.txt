@@ -1,0 +1,57 @@
+======================================================================
+PHASE 3 — EDA REPORT (freMTPL2 merged)
+======================================================================
+
+--- Dataset shape ---
+Policies:                678,013
+Columns:                 14
+Total exposure (years):  358,499.45
+
+--- Frequency ---
+Total claims (ClaimNb sum):   36,102
+Policies with ClaimNb > 0:    34,060
+Frequency per exposure year:  0.100703
+
+--- Severity (per-policy ClaimAmount_sum, ClaimNb_sev > 0) ---
+Policies with severity:       24,944
+   count:          24,944
+    mean:        2,401.75
+     std:       30,264.75
+     min:            1.00
+     max:    4,075,400.56
+     p50:        1,172.00
+     p90:        3,000.00
+     p95:        5,026.20
+     p99:       18,278.38
+   p99.5:       35,630.33
+   p99.9:      181,252.22
+
+--- Concentration (severity) ---
+Gini normalized:              0.6475
+       top_0.1:  60.20% of total severity
+      top_0.01:  37.86% of total severity
+     top_0.001:  20.82% of total severity
+
+--- Tail threshold candidates (severity per policy) ---
+  p 99.0:    18,278.38 EUR   (250 policies above)
+  p 99.5:    35,630.33 EUR   (125 policies above)
+  p 99.9:   181,252.22 EUR   (25 policies above)
+
+--- Severity availability ---
+Policies with ClaimNb_sev = 0:        653,069
+   of which ClaimNb > 0 (no sev row): 9,116
+
+--- Top-10 severity policies ---
+  IDpol  ClaimNb  ClaimNb_sev  ClaimAmount_sum
+1120377        1            1       4075400.56
+ 110846        2            2       1404185.52
+2141337        1            1       1301172.60
+3122016        1            1        774411.50
+2008127        3            3        399213.66
+3025890        2            2        382955.14
+1117644        1            1        307096.42
+ 158309        1            1        301635.49
+3075820        1            1        287423.00
+3150210        1            1        281897.49
+
+======================================================================
