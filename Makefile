@@ -4,7 +4,7 @@ UV := uv
 RUFF := uv run ruff
 PYTEST := uv run pytest
 
-.PHONY: help install sync lint format format-check test ci clean
+.PHONY: help install sync lint format format-check test ci data validate processed clean
 
 help:  ## Show available targets
 	@echo "Available targets:"
@@ -15,6 +15,9 @@ help:  ## Show available targets
 	@echo "  format-check  Check formatting without modifying files"
 	@echo "  test          Run the full pytest suite"
 	@echo "  ci            Full pipeline: lint + format-check + test"
+	@echo "  data          Download raw freMTPL2 to data/raw/"
+	@echo "  validate      Validate + clean + merge to data/processed/"
+	@echo "  processed     Alias for validate"
 	@echo "  clean         Remove caches and build artifacts"
 
 install: sync
@@ -35,6 +38,12 @@ test:
 	$(PYTEST) tests/ -v
 
 ci: lint format-check test
+
+data:
+	$(UV) run python -m src.data.download
+
+validate processed:
+	$(UV) run python -m src.data.validate
 
 clean:
 	rm -rf .pytest_cache .ruff_cache htmlcov .coverage
