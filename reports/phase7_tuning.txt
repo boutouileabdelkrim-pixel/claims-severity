@@ -1,0 +1,47 @@
+==========================================================================================
+PHASE 7 — OPTUNA TUNING (LightGBM frequencINFO: Wrote /home/loranos/projects/claims-severity/reports/phase7_tuning.txt
+==========================================================================================
+PHASE 7 — OPTUNA TUNING (LightGBM frequency)
+==========================================================================================
+
+Trials: 15 (limit 15, timeout 1500s)
+Elapsed: 263.6s (4.39 min)
+CV folds: 3
+
+Best CV Poisson deviance: 0.1514
+Best params:
+  n_estimators: 300
+  learning_rate: 0.05566496734404798
+  num_leaves: 63
+  min_child_samples: 100
+  subsample: 0.7658181559328398
+  colsample_bytree: 0.7360394947717632
+  reg_alpha: 0.44528192036238834
+  reg_lambda: 0.3991358530198217
+
+Val Poisson deviance (tuned):   0.1517
+Val Poisson deviance (default): 0.1515
+Val AE (tuned):                 0.9972
+Val AE (default):               0.9965
+Delta vs default (val):         +0.12%
+
+DECISION: tuned model is not better than default.
+Tuning does not help. Keep Phase 6 defaults.
+
+=== Trial history ===
+ trial      state      value  params
+     0   COMPLETE     0.1516  {"n_estimators": 300, "learning_rate": 0.07242113527908035, "num_leave
+     1   COMPLETE     0.1518  {"n_estimators": 150, "learning_rate": 0.038739040741088984, "num_leav
+     2   COMPLETE     0.1516  {"n_estimators": 300, "learning_rate": 0.05195059857049582, "num_leave
+     3   COMPLETE     0.1515  {"n_estimators": 300, "learning_rate": 0.07939900239532816, "num_leave
+     4   COMPLETE     0.1515  {"n_estimators": 300, "learning_rate": 0.043662475110112876, "num_leav
+     5   COMPLETE     0.1516  {"n_estimators": 300, "learning_rate": 0.09527027859461479, "num_leave
+     6   COMPLETE     0.1514  {"n_estimators": 300, "learning_rate": 0.036112553196700405, "num_leav
+     7   COMPLETE     0.1514  {"n_estimators": 300, "learning_rate": 0.05566496734404798, "num_leave
+     8   COMPLETE     0.1514  {"n_estimators": 300, "learning_rate": 0.06010059219819023, "num_leave
+     9   COMPLETE     0.1517  {"n_estimators": 300, "learning_rate": 0.03901322313990154, "num_leave
+    10   COMPLETE     0.1514  {"n_estimators": 300, "learning_rate": 0.06758674890033865, "num_leave
+    11   COMPLETE     0.1514  {"n_estimators": 300, "learning_rate": 0.05137918258881836, "num_leave
+    12   COMPLETE     0.1514  {"n_estimators": 300, "learning_rate": 0.04517360257809991, "num_leave
+    13   COMPLETE     0.1515  {"n_estimators": 300, "learning_rate": 0.05529345751352277, "num_leave
+    14   COMPLETE     0.1514  {"n_estimators": 300, "learning_rate": 0.03767225334399476, "num_leave
