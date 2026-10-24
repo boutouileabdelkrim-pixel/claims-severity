@@ -2,15 +2,16 @@
 
 Three families:
 - Frequency: rate target (ClaimNb / Exposure) + sample_weight=Exposure.
-  Equivalent to a log-link GLM with offset log(Exposure) (Phase 5 note).
-  Predict = rate * exposure = expected count.
-- Severity: per-claim target = ClaimAmount_capped / ClaimNb_sev,
+  Equivalent to log-link GLM with offset log(Exposure).
+- Severity: per-claim raw target = ClaimAmount_sum / ClaimNb_sev,
   sample_weight = ClaimNb_sev. Gamma objective. Raw per-claim evaluated
   by multiplying back by ClaimNb_sev.
-- Tweedie direct: target = ClaimAmount_sum (raw, fillna 0 on no-claim
-  policies). Handles the compound Poisson-Gamma distribution natively.
+- Tweedie direct: rate per exposure unit = ClaimAmount_sum / Exposure,
+  sample_weight = Exposure, variance_power tunable. Predict = rate ×
+  exposure per policy. This properly accounts for exposure variability,
+  unlike a naive per-policy target.
 
-No Optuna yet (Phase 7). Sane defaults + early stopping on val.
+No Optuna in gbm.py (Phase 7 does that separately). Sane defaults.
 """
 
 from __future__ import annotations
@@ -41,7 +42,7 @@ def fit_xgb_freq(
     subsample: float = 0.9,
     colsample_bytree: float = 0.9,
 ) -> xgb.XGBRegressor:
-    """Fit XGBoost Poisson on rate target with exposure weight."""
+    """XGBoost Poisson on rate target with exposure weight."""
     mask_tr = exposure_train > 1e-9
     mask_va = exposure_val > 1e-9
     rate_tr = y_train[mask_tr] / exposure_train[mask_tr]
@@ -85,7 +86,7 @@ def fit_lgbm_freq(
     subsample: float = 0.9,
     colsample_bytree: float = 0.9,
 ) -> lgb.LGBMRegressor:
-    """Fit LightGBM Poisson on rate target with exposure weight."""
+    """LightGBM Poisson on rate target with exposure weight."""
     mask_tr = exposure_train > 1e-9
     mask_va = exposure_val > 1e-9
     rate_tr = y_train[mask_tr] / exposure_train[mask_tr]
@@ -120,16 +121,16 @@ def predict_freq_count(model, X: np.ndarray, exposure: np.ndarray) -> np.ndarray
 
 
 # =========================================================================
-# Severity (per-claim capped target, sample_weight=ClaimNb_sev)
+# Severity (per-claim raw target, sample_weight=ClaimNb_sev)
 # =========================================================================
 
 
 def fit_xgb_sev(
     X_train: np.ndarray,
-    y_total_capped: np.ndarray,
+    y_total: np.ndarray,
     n_claims_train: np.ndarray,
     X_val: np.ndarray,
-    y_total_capped_val: np.ndarray,
+    y_total_val: np.ndarray,
     n_claims_val: np.ndarray,
     n_estimators: int = 500,
     learning_rate: float = 0.05,
@@ -138,9 +139,9 @@ def fit_xgb_sev(
     subsample: float = 0.9,
     colsample_bytree: float = 0.9,
 ) -> xgb.XGBRegressor:
-    """Fit XGBoost Gamma on per-claim capped severity with claim weight."""
-    y_per_claim = y_total_capped / n_claims_train
-    y_per_claim_va = y_total_capped_val / n_claims_val
+    """XGBoost Gamma on per-claim raw severity with claim weight."""
+    y_per_claim = y_total / n_claims_train
+    y_per_claim_va = y_total_val / n_claims_val
 
     model = xgb.XGBRegressor(
         objective="reg:gamma",
@@ -168,10 +169,10 @@ def fit_xgb_sev(
 
 def fit_lgbm_sev(
     X_train: np.ndarray,
-    y_total_capped: np.ndarray,
+    y_total: np.ndarray,
     n_claims_train: np.ndarray,
     X_val: np.ndarray,
-    y_total_capped_val: np.ndarray,
+    y_total_val: np.ndarray,
     n_claims_val: np.ndarray,
     n_estimators: int = 500,
     learning_rate: float = 0.05,
@@ -180,9 +181,9 @@ def fit_lgbm_sev(
     subsample: float = 0.9,
     colsample_bytree: float = 0.9,
 ) -> lgb.LGBMRegressor:
-    """Fit LightGBM Gamma on per-claim capped severity with claim weight."""
-    y_per_claim = y_total_capped / n_claims_train
-    y_per_claim_va = y_total_capped_val / n_claims_val
+    """LightGBM Gamma on per-claim raw severity with claim weight."""
+    y_per_claim = y_total / n_claims_train
+    y_per_claim_va = y_total_val / n_claims_val
 
     model = lgb.LGBMRegressor(
         objective="gamma",
@@ -213,27 +214,44 @@ def predict_sev_per_claim(model, X: np.ndarray) -> np.ndarray:
 
 
 # =========================================================================
-# Tweedie direct (raw pure premium, per policy)
+# Tweedie direct (RATE per exposure unit, sample_weight=Exposure)
 # =========================================================================
+#
+# Bug fix (post Phase 6): the original version fit on raw per-policy
+# ClaimAmount_sum with no exposure information. The model literally could
+# not learn to scale by exposure — leading to AE 1.40-1.46. Now:
+#   - target = ClaimAmount / Exposure  (rate per unit exposure)
+#   - sample_weight = Exposure         (each policy-year counts equally)
+#   - predict returns rate, caller multiplies by exposure
+#   - variance_power is tunable: [1.1, 1.3, 1.5, 1.7, 1.9] typical
+#     for insurance compound Poisson-Gamma; higher = heavier tail fit.
+#
 
 
 def fit_xgb_tweedie(
     X_train: np.ndarray,
     y_train: np.ndarray,
+    exposure_train: np.ndarray,
     X_val: np.ndarray,
     y_val: np.ndarray,
+    exposure_val: np.ndarray,
+    variance_power: float = 1.5,
     n_estimators: int = 500,
     learning_rate: float = 0.05,
     max_depth: int = 6,
     min_child_weight: float = 10.0,
     subsample: float = 0.9,
     colsample_bytree: float = 0.9,
-    tweedie_variance_power: float = 1.5,
 ) -> xgb.XGBRegressor:
-    """Fit XGBoost Tweedie on raw per-policy pure premium."""
+    """XGBoost Tweedie on rate target with exposure weight."""
+    mask_tr = exposure_train > 1e-9
+    mask_va = exposure_val > 1e-9
+    rate_tr = y_train[mask_tr] / exposure_train[mask_tr]
+    rate_va = y_val[mask_va] / exposure_val[mask_va]
+
     model = xgb.XGBRegressor(
         objective="reg:tweedie",
-        tweedie_variance_power=tweedie_variance_power,
+        tweedie_variance_power=variance_power,
         n_estimators=n_estimators,
         learning_rate=learning_rate,
         max_depth=max_depth,
@@ -243,12 +261,14 @@ def fit_xgb_tweedie(
         random_state=RANDOM_STATE,
         tree_method="hist",
         early_stopping_rounds=50,
-        eval_metric="tweedie-nloglik@1.5",
+        eval_metric=f"tweedie-nloglik@{variance_power}",
     )
     model.fit(
-        X_train,
-        y_train,
-        eval_set=[(X_val, y_val)],
+        X_train[mask_tr],
+        rate_tr,
+        sample_weight=exposure_train[mask_tr],
+        eval_set=[(X_val[mask_va], rate_va)],
+        sample_weight_eval_set=[exposure_val[mask_va]],
         verbose=False,
     )
     return model
@@ -257,20 +277,27 @@ def fit_xgb_tweedie(
 def fit_lgbm_tweedie(
     X_train: np.ndarray,
     y_train: np.ndarray,
+    exposure_train: np.ndarray,
     X_val: np.ndarray,
     y_val: np.ndarray,
+    exposure_val: np.ndarray,
+    variance_power: float = 1.5,
     n_estimators: int = 500,
     learning_rate: float = 0.05,
     num_leaves: int = 63,
     min_child_samples: int = 50,
     subsample: float = 0.9,
     colsample_bytree: float = 0.9,
-    tweedie_variance_power: float = 1.5,
 ) -> lgb.LGBMRegressor:
-    """Fit LightGBM Tweedie on raw per-policy pure premium."""
+    """LightGBM Tweedie on rate target with exposure weight."""
+    mask_tr = exposure_train > 1e-9
+    mask_va = exposure_val > 1e-9
+    rate_tr = y_train[mask_tr] / exposure_train[mask_tr]
+    rate_va = y_val[mask_va] / exposure_val[mask_va]
+
     model = lgb.LGBMRegressor(
         objective="tweedie",
-        tweedie_variance_power=tweedie_variance_power,
+        tweedie_variance_power=variance_power,
         n_estimators=n_estimators,
         learning_rate=learning_rate,
         num_leaves=num_leaves,
@@ -281,15 +308,17 @@ def fit_lgbm_tweedie(
         verbose=-1,
     )
     model.fit(
-        X_train,
-        y_train,
-        eval_set=[(X_val, y_val)],
+        X_train[mask_tr],
+        rate_tr,
+        sample_weight=exposure_train[mask_tr],
+        eval_set=[(X_val[mask_va], rate_va)],
+        eval_sample_weight=[exposure_val[mask_va]],
         eval_metric="tweedie",
         callbacks=[lgb.early_stopping(50, verbose=False)],
     )
     return model
 
 
-def predict_tweedie(model, X: np.ndarray) -> np.ndarray:
-    """Per-policy pure premium (clipped positive)."""
-    return np.clip(model.predict(X), 0.0, None)
+def predict_tweedie(model, X: np.ndarray, exposure: np.ndarray) -> np.ndarray:
+    """Per-policy pure premium = rate prediction × exposure."""
+    return np.clip(model.predict(X), 0.0, None) * exposure

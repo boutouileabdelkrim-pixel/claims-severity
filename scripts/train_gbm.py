@@ -1,20 +1,15 @@
 """Train and evaluate Phase 6 GBM models.
 
-Trains 6 models (XGB+LGBM × freq+sev+tweedie), evaluates on val,
-compares vs Phase 5 baselines. Writes reports/phase6_gbm.txt.
+Trains 6 model families (XGB+LGBM × freq+sev+tweedie) plus:
+- Tweedie variance_power grid: [1.1, 1.3, 1.5, 1.7, 1.9], best on val kept.
 
 Test split is NEVER loaded. Assertion at end confirms.
 
-Cap experiment (Phase 6 finding):
-Phase 4 chose p99.5 = 35,096 EUR. Phase 6 first run showed this destroys
-pure premium calibration: AE = 1.44 on val. Raising to p99.9 (train-only
-cap = 126,014 EUR) improved compound to AE = 1.30 but Tweedie got WORSE
-(AE 1.50). Root cause: top 0.1% of policies hold 60% of severity mass
-(Phase 3 EDA). No cap in [p99.5, p99.9] recovers calibration.
-
-Decision: revert to RAW target for severity and Tweedie, matching Phase 5.
-Accept training noise from the 4M EUR outlier. Report honest PP AE ≈ 1.10
-which is the val-tail-shift (+7.7% documented in Phase 5).
+Tweedie fix (post Phase 6): rate target (ClaimAmount / Exposure),
+sample_weight=Exposure, variance_power tunable. This is the standard
+Tweedie compound Poisson-Gamma setup for insurance. The original version
+fit on raw per-policy target with no exposure info — leading to AE
+1.40-1.46. Fix brings it into honest range.
 """
 
 from __future__ import annotations
@@ -77,8 +72,11 @@ NUMERICS = [
     "DrivAge_bucket",
 ]
 
+TWEEDIE_VP_GRID = [1.1, 1.3, 1.5, 1.7, 1.9]
+
 
 def build_matrix(train: pd.DataFrame, val: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
+    """One-hot cats + scaled numerics."""
     dummies_tr = pd.get_dummies(train[CATEGORICALS], drop_first=True, dtype=np.int8)
     cols = list(dummies_tr.columns)
     dummies_va = pd.get_dummies(val[CATEGORICALS], drop_first=True, dtype=np.int8)
@@ -101,7 +99,11 @@ def eval_freq(y_true: np.ndarray, preds: np.ndarray) -> dict:
     }
 
 
-def eval_sev(y_per_claim: np.ndarray, preds_per_claim: np.ndarray, n_claims: np.ndarray) -> dict:
+def eval_sev(
+    y_per_claim: np.ndarray,
+    preds_per_claim: np.ndarray,
+    n_claims: np.ndarray,
+) -> dict:
     return {
         "mae_per_claim": float(mae(y_per_claim, preds_per_claim)),
         "deviance": float(gamma_deviance(y_per_claim, preds_per_claim, sample_weight=n_claims)),
@@ -138,7 +140,7 @@ def main() -> None:
         print(s)
 
     p("=" * 100)
-    p("PHASE 6 — GBM RESULTS")
+    p("PHASE 6 — GBM RESULTS (Tweedie fixed with exposure weight)")
     p("=" * 100)
     p()
 
@@ -151,9 +153,18 @@ def main() -> None:
 
     freq_rows = [
         ("dummy_va", eval_freq(y_freq_va, dummy_f.predict(val))),
-        ("glm_poisson_va", eval_freq(y_freq_va, predict_glm_freq(poisson_glm, X_va, exp_va))),
-        ("xgb_poisson_va", eval_freq(y_freq_va, predict_gbm_freq(xgb_f, X_va, exp_va))),
-        ("lgbm_poisson_va", eval_freq(y_freq_va, predict_gbm_freq(lgbm_f, X_va, exp_va))),
+        (
+            "glm_poisson_va",
+            eval_freq(y_freq_va, predict_glm_freq(poisson_glm, X_va, exp_va)),
+        ),
+        (
+            "xgb_poisson_va",
+            eval_freq(y_freq_va, predict_gbm_freq(xgb_f, X_va, exp_va)),
+        ),
+        (
+            "lgbm_poisson_va",
+            eval_freq(y_freq_va, predict_gbm_freq(lgbm_f, X_va, exp_va)),
+        ),
     ]
     p(
         f"{'model':<18s} {'mae':>10s} {'deviance':>12s} {'ae':>8s} "
@@ -168,7 +179,7 @@ def main() -> None:
     p()
 
     # ------------------ Severity (RAW target, no cap) ------------------
-    p("=== Severity (Gamma, per-claim, RAW target — no cap) ===")
+    p("=== Severity (Gamma, per-claim, RAW target) ===")
     m_tr = (train["ClaimNb_sev"] > 0).to_numpy()
     m_va = (val["ClaimNb_sev"] > 0).to_numpy()
     train_sev = train.loc[m_tr]
@@ -188,36 +199,81 @@ def main() -> None:
 
     sev_rows = [
         ("dummy_va", eval_sev(y_per_va, dummy_s.predict(val_sev), n_va)),
-        ("glm_gamma_va", eval_sev(y_per_va, predict_glm_sev(gamma_glm, X_va_sev), n_va)),
-        ("xgb_gamma_va", eval_sev(y_per_va, predict_gbm_sev(xgb_s, X_va_sev), n_va)),
-        ("lgbm_gamma_va", eval_sev(y_per_va, predict_gbm_sev(lgbm_s, X_va_sev), n_va)),
+        (
+            "glm_gamma_va",
+            eval_sev(y_per_va, predict_glm_sev(gamma_glm, X_va_sev), n_va),
+        ),
+        (
+            "xgb_gamma_va",
+            eval_sev(y_per_va, predict_gbm_sev(xgb_s, X_va_sev), n_va),
+        ),
+        (
+            "lgbm_gamma_va",
+            eval_sev(y_per_va, predict_gbm_sev(lgbm_s, X_va_sev), n_va),
+        ),
     ]
     p(f"{'model':<18s} {'mae_per_claim':>16s} {'deviance':>12s} {'ae':>8s}")
     for name, r in sev_rows:
         p(f"{name:<18s} {r['mae_per_claim']:>16.4f} {r['deviance']:>12.4f} {r['ae']:>8.4f}")
     p()
 
-    # ------------------ Pure premium (raw target) ------------------
-    p("=== Pure premium (raw target, per-policy) ===")
+    # ------------------ Tweedie grid search ------------------
+    p("=== Tweedie grid (variance_power) — XGBoost + LightGBM ===")
     y_raw_tr = train["ClaimAmount_sum"].fillna(0.0).to_numpy(dtype=float)
     y_raw_va = val["ClaimAmount_sum"].fillna(0.0).to_numpy(dtype=float)
     p_has_sev = float(train["ClaimNb_sev"].sum()) / float(train["ClaimNb"].sum())
 
-    # Compound: LGBM freq × GLM sev × p_has_sev
-    # LGBM Gamma severity is unstable on raw target (val AE 1.28, overfits
-    # the 4M EUR tail). GLM Gamma is stable (val AE 1.09). Use best of both
-    # families; see reports/phase6_gbm.md "Discovery" section.
+    p(f"{'model':<22s} {'vp':>5s} {'val_dev':>10s} {'val_ae':>8s} {'val_mae':>10s}")
+
+    best_xgb: tuple[float, object, dict] | None = None
+    for vp in TWEEDIE_VP_GRID:
+        model = fit_xgb_tweedie(X_tr, y_raw_tr, exp_tr, X_va, y_raw_va, exp_va, variance_power=vp)
+        pred = predict_tweedie(model, X_va, exp_va)
+        r = eval_pp(y_raw_va, pred)
+        from src.models.metrics import (
+            tweedie_deviance as _tweedie_dev,
+        )
+
+        dev = float(_tweedie_dev(y_raw_va, pred, p=vp))
+        p(f"{'xgb_tweedie':<22s} {vp:>5.2f} {dev:>10.4f} {r['ae']:>8.4f} {r['mae']:>10.2f}")
+        if best_xgb is None or dev < best_xgb[0]:
+            best_xgb = (dev, model, {"variance_power": vp, **r})
+
+    best_lgbm: tuple[float, object, dict] | None = None
+    for vp in TWEEDIE_VP_GRID:
+        model = fit_lgbm_tweedie(X_tr, y_raw_tr, exp_tr, X_va, y_raw_va, exp_va, variance_power=vp)
+        pred = predict_tweedie(model, X_va, exp_va)
+        r = eval_pp(y_raw_va, pred)
+        from src.models.metrics import (
+            tweedie_deviance as _tweedie_dev,
+        )
+
+        dev = float(_tweedie_dev(y_raw_va, pred, p=vp))
+        p(f"{'lgbm_tweedie':<22s} {vp:>5.2f} {dev:>10.4f} {r['ae']:>8.4f} {r['mae']:>10.2f}")
+        if best_lgbm is None or dev < best_lgbm[0]:
+            best_lgbm = (dev, model, {"variance_power": vp, **r})
+
+    p()
+    assert best_xgb is not None and best_lgbm is not None
+    p(
+        f"Best XGB Tweedie: vp={best_xgb[2]['variance_power']:.2f}, "
+        f"val AE={best_xgb[2]['ae']:.4f}, val MAE={best_xgb[2]['mae']:.2f}"
+    )
+    p(
+        f"Best LGBM Tweedie: vp={best_lgbm[2]['variance_power']:.2f}, "
+        f"val AE={best_lgbm[2]['ae']:.4f}, val MAE={best_lgbm[2]['mae']:.2f}"
+    )
+    p()
+
+    # ------------------ Pure premium (best-of-both + best Tweedie) ------------------
+    p("=== Pure premium (per-policy) ===")
     best_freq_rate_va = predict_gbm_freq(lgbm_f, X_va, exp_va) / np.clip(exp_va, 1e-9, None)
     best_sev_va = predict_glm_sev(gamma_glm, X_va)
     pp_compound = best_freq_rate_va * exp_va * best_sev_va * p_has_sev
 
-    # Tweedie direct (raw target)
-    xgb_t = fit_xgb_tweedie(X_tr, y_raw_tr, X_va, y_raw_va)
-    lgbm_t = fit_lgbm_tweedie(X_tr, y_raw_tr, X_va, y_raw_va)
-    pp_xgb_t = predict_tweedie(xgb_t, X_va)
-    pp_lgbm_t = predict_tweedie(lgbm_t, X_va)
+    pp_xgb_t = predict_tweedie(best_xgb[1], X_va, exp_va)
+    pp_lgbm_t = predict_tweedie(best_lgbm[1], X_va, exp_va)
 
-    # GLM compound
     pp_glm = (
         predict_glm_freq(poisson_glm, X_va, exp_va) * predict_glm_sev(gamma_glm, X_va) * p_has_sev
     )
