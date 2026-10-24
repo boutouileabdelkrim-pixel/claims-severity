@@ -4,7 +4,7 @@ UV := uv
 RUFF := uv run ruff
 PYTEST := uv run pytest
 
-.PHONY: help install sync lint format format-check test ci data validate processed eda features baselines clean
+.PHONY: help install sync lint format format-check test ci data validate processed eda features baselines gbm clean
 
 help:  ## Show available targets
 	@echo "Available targets:"
@@ -21,6 +21,7 @@ help:  ## Show available targets
 	@echo "  eda           Print EDA report + save reports/phase3_eda.txt"
 	@echo "  features      Build train/val/test features parquets"
 	@echo "  baselines     Train + evaluate Dummy and GLM baselines"
+	@echo "  gbm           Train + evaluate XGB + LGBM (freq, sev, tweedie)"
 	@echo "  clean         Remove caches and build artifacts"
 
 install: sync
@@ -56,6 +57,9 @@ features:
 
 baselines:
 	$(UV) run python -m scripts.train_baselines
+
+gbm:
+	$(UV) run python -m scripts.train_gbm
 
 clean:
 	rm -rf .pytest_cache .ruff_cache htmlcov .coverage
