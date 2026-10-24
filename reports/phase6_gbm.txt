@@ -1,1 +1,86 @@
-make: Nothing to be done for 'gbm'.
+====================================================================================================
+PHASE 6 — GBM RESULTS (Tweedie fixed with exposure weight)
+====================================================================================================
+
+=== Frequency (Poisson) ===
+model                     mae     deviance       ae     tot_actual       tot_pred
+dummy_va               0.1002       0.1662   0.9981          5,417          5,427
+glm_poisson_va         0.0988       0.1584   0.9966          5,417          5,436
+xgb_poisson_va         0.0964       0.1518   0.9981          5,417          5,427
+lgbm_poisson_va        0.0964       0.1515   0.9965          5,417          5,436
+
+=== Severity (Gamma, per-claim, RAW target) ===
+model                 mae_per_claim     deviance       ae
+dummy_va                  2443.0767       1.8629   1.0787
+glm_gamma_va              2465.6981       1.8471   1.0902
+xgb_gamma_va              2418.9001       1.8622   1.0946
+lgbm_gamma_va             2190.0251       1.7965   1.2818
+
+=== Tweedie grid (variance_power) — XGBoost + LightGBM ===
+model                     vp    val_dev   val_ae    val_mae
+xgb_tweedie             1.10   528.6486   1.3075     158.86
+xgb_tweedie             1.30   177.4915   1.4354     152.62
+xgb_tweedie             1.50    75.4827   1.4266     153.43
+xgb_tweedie             1.70    40.4125   1.5031     150.18
+xgb_tweedie             1.90    38.1177   1.4941     151.21
+lgbm_tweedie            1.10   526.3716   1.3382     157.32
+lgbm_tweedie            1.30   174.2530   1.4120     153.86
+lgbm_tweedie            1.50    72.9048   1.5040     149.89
+lgbm_tweedie            1.70    39.2944   1.5277     149.31
+lgbm_tweedie            1.90    37.5170   1.5337     149.52
+
+Best XGB Tweedie: vp=1.90, val AE=1.4941, val MAE=151.21
+Best LGBM Tweedie: vp=1.90, val AE=1.5337, val MAE=149.52
+
+=== Pure premium (per-policy) ===
+model                       mae       ae     tot_actual       tot_pred
+glm_compound_va          170.51   1.1228      9,681,736      8,622,567
+gbmINFO: Wrote /home/loranos/projects/claims-severity/reports/phase6_gbm.txt
+====================================================================================================
+PHASE 6 — GBM RESULTS (Tweedie fixed with exposure weight)
+====================================================================================================
+
+=== Frequency (Poisson) ===
+model                     mae     deviance       ae     tot_actual       tot_pred
+dummy_va               0.1002       0.1662   0.9981          5,417          5,427
+glm_poisson_va         0.0988       0.1584   0.9966          5,417          5,436
+xgb_poisson_va         0.0964       0.1518   0.9981          5,417          5,427
+lgbm_poisson_va        0.0964       0.1515   0.9965          5,417          5,436
+
+=== Severity (Gamma, per-claim, RAW target) ===
+model                 mae_per_claim     deviance       ae
+dummy_va                  2443.0767       1.8629   1.0787
+glm_gamma_va              2465.6981       1.8471   1.0902
+xgb_gamma_va              2418.9001       1.8622   1.0946
+lgbm_gamma_va             2190.0251       1.7965   1.2818
+
+=== Tweedie grid (variance_power) — XGBoost + LightGBM ===
+model                     vp    val_dev   val_ae    val_mae
+xgb_tweedie             1.10   528.6486   1.3075     158.86
+xgb_tweedie             1.30   177.4915   1.4354     152.62
+xgb_tweedie             1.50    75.4827   1.4266     153.43
+xgb_tweedie             1.70    40.4125   1.5031     150.18
+xgb_tweedie             1.90    38.1177   1.4941     151.21
+lgbm_tweedie            1.10   526.3716   1.3382     157.32
+lgbm_tweedie            1.30   174.2530   1.4120     153.86
+lgbm_tweedie            1.50    72.9048   1.5040     149.89
+lgbm_tweedie            1.70    39.2944   1.5277     149.31
+lgbm_tweedie            1.90    37.5170   1.5337     149.52
+
+Best XGB Tweedie: vp=1.90, val AE=1.4941, val MAE=151.21
+Best LGBM Tweedie: vp=1.90, val AE=1.5337, val MAE=149.52
+
+=== Pure premium (per-policy) ===
+model                       mae       ae     tot_actual       tot_pred
+glm_compound_va          170.51   1.1228      9,681,736      8,622,567
+gbm_compound_va          168.64   1.1257      9,681,736      8,600,663
+xgb_tweedie_va           151.21   1.4941      9,681,736      6,479,806
+lgbm_tweedie_va          149.52   1.5337      9,681,736      6,312,707
+
+p_has_sev (train) = 0.7306
+
+=== Deltas vs Phase 5 baselines (val) ===
+Frequency Poisson deviance: GLM=0.1584  best GBM=0.1515  delta=-4.40%
+Severity Gamma deviance:    GLM=1.8471  best GBM=1.7965  delta=-2.74%
+
+OK: test split never evaluated

@@ -59,6 +59,9 @@ features:
 baselines:
 	$(UV) run python -m scripts.train_baselines
 
+gbm:
+	$(UV) run python -m scripts.train_gbm
+
 tune:
 	$(UV) run python -m scripts.tune_lgbm
 
