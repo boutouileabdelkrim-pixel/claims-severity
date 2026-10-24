@@ -1,0 +1,30 @@
+====================================================================================================
+PHASE 5 — BASELINE RESULTS (with corrections)
+=====INFO: Wrote /home/loranos/projects/claims-severity/reports/phase5_baselines.txt
+====================================================================================================
+PHASE 5 — BASELINE RESULTS (with corrections)
+====================================================================================================
+p_has_sev (train) = 0.7306   (fraction of claims with sev record)
+GLM features: 42  (11 scaled numeric + one-hot cat)
+
+=== Frequency (rate target) ===
+model                       n              mae poisson_deviance  actual_expected     total_actual  total_predicted
+dummy_tr               474,609           0.0999           0.1655           1.0000       25259.0000       25259.0000
+dummy_va               101,702           0.1002           0.1662           0.9981        5417.0000        5427.2808
+poisson_tr             474,609           0.0984           0.1575           1.0000       25259.0000       25258.9045
+poisson_va             101,702           0.0988           0.1584           0.9966        5417.0000        5435.5729
+
+=== Severity (raw target, per-claim) ===
+model              n_policies         n_claims    mae_per_claim   gamma_deviance  actual_expected     total_actual  total_predicted
+dummy_tr                17,417           18,453        2203.9045           1.6976           0.9767    41701871.7700    41701871.7700
+dummy_va                 3,755            3,976        2443.0767           1.8629           1.0787     9681735.8900     8985348.8407
+gamma_tr                17,417           18,453        2188.9139           1.5257           1.0019    41701871.7700    40641993.0881
+gamma_va                 3,755            3,976        2465.6981           1.8471           1.0902     9681735.8900     8890369.8470
+
+=== Pure premium (raw target, p_has_sev corrected) ===
+model                     mae  actual_expected     total_actual  total_predicted
+dummy_tr              167.6166           1.0000    41701871.7700    41701871.7700
+dummy_va              175.2266           1.0805     9681735.8900     8960282.1399
+glm_tr                162.7229           1.0420    41701871.7700    40022714.3350
+glm_va                170.5110           1.1228     9681735.8900     8622566.5345
+
