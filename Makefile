@@ -3,8 +3,10 @@
 UV := uv
 RUFF := uv run ruff
 PYTEST := uv run pytest
+DOCKER_IMAGE := claims-severity
+DOCKER_TAG := latest
 
-.PHONY: help install sync lint format format-check test ci data validate processed eda features baselines gbm tune uncertainty evaluate clean
+.PHONY: help install sync lint format format-check test ci data validate processed eda features baselines gbm tune uncertainty evaluate mlflow docker-build docker-run clean
 
 help:  ## Show available targets
 	@echo "Available targets:"
@@ -25,6 +27,9 @@ help:  ## Show available targets
 	@echo "  tune          Optuna tune LGBM frequency (15 trials, 3-fold CV)"
 	@echo "  uncertainty   Quantile + CQR intervals, coverage verification"
 	@echo "  evaluate      Final evaluation on test (touches test once)"
+	@echo "  mlflow        Log the frozen compound model + artifacts to MLflow"
+	@echo "  docker-build  Build Docker image $(DOCKER_IMAGE):$(DOCKER_TAG)"
+	@echo "  docker-run    Run Docker image on port 8000"
 	@echo "  clean         Remove caches and build artifacts"
 
 install: sync
@@ -72,6 +77,15 @@ uncertainty:
 
 evaluate:
 	$(UV) run python -m scripts.evaluate_final
+
+mlflow:
+	$(UV) run python -m scripts.log_to_mlflow
+
+docker-build:
+	docker build -t $(DOCKER_IMAGE):$(DOCKER_TAG) .
+
+docker-run:
+	docker run --rm -p 8000:8000 --name $(DOCKER_IMAGE) $(DOCKER_IMAGE):$(DOCKER_TAG)
 
 clean:
 	rm -rf .pytest_cache .ruff_cache htmlcov .coverage

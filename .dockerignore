@@ -1,0 +1,26 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.ruff_cache/
+
+# Project
+.git/
+.gitignore
+data/
+models/
+mlruns/
+notebooks/
+docs/
+reports/
+tests/
+scripts/
+.env
+README.md
+Makefile
+docker-compose.yml
+Dockerfile
+.dockerignore

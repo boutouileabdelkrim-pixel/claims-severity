@@ -1,0 +1,52 @@
+================================================================================
+PHASE 10 — MLFLOW LOGGING
+================================================================================
+
+Tracking URI: file:/home/loranos/projects/claims-severity/mlruns
+Experiment:   claims-severity
+Run ID:       8466b1dc3a174f4d9f6b6edcc03bebae
+Bundle:       /home/loranos/projects/claims-severity/models/bundle_v1.pkl
+
+=== Val metrics logged ===
+  val_poisson_deviance         0.1515
+  val_freq_ae                  0.9965
+  val_sev_INFO: Wrote /home/loranos/projects/claims-severity/reports/phase10_mlflow.txt
+================================================================================
+PHASE 10 — MLFLOW LOGGING
+================================================================================
+
+Tracking URI: file:/home/loranos/projects/claims-severity/mlruns
+Experiment:   claims-severity
+Run ID:       8466b1dc3a174f4d9f6b6edcc03bebae
+Bundle:       /home/loranos/projects/claims-severity/models/bundle_v1.pkl
+
+=== Val metrics logged ===
+  val_poisson_deviance         0.1515
+  val_freq_ae                  0.9965
+  val_sev_gamma_deviance       1.8471
+  val_sev_ae                   1.0902
+  val_pp_mae                   168.6357
+  val_pp_ae                    1.1257
+
+=== Params logged ===
+  n_estimators             500
+  learning_rate            0.050000
+  num_leaves               63
+  min_child_samples        50
+  subsample                0.900000
+  colsample_bytree         0.900000
+  random_state             42
+  p_has_sev                0.730551
+  q_hat_phase8             0.271400
+  n_train_rows             474609
+  n_val_rows               101702
+  n_train_claims           17417
+
+=== Artifacts logged (if present) ===
+  OK       phase3_eda.txt
+  OK       phase5_baselines.txt
+  OK       phase6_gbm.txt
+  OK       phase8_uncertainty.txt
+  OK       phase9_final_evaluation.txt
+  OK       phase9_shap_summary.png
+  OK       phase9_lift_chart.png
