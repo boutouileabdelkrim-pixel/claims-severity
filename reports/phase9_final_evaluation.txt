@@ -1,0 +1,94 @@
+==========================================================================================
+PHASE 9 — FINAL EVALUATION ON TEST
+==========================================================================================
+
+Model: LGBM freq × GLM sev × p_has_sev (Phase 6 chosen compound)
+Test rows: 101,702
+p_has_sev: 0.7306
+q_hat (frozen from Phase 8): 0.2714
+
+=== Global metrics on test ===
+Pure premium MAE:          157.16 EUR
+Pure premium AE:           0.9909
+Pure premium Gini:         0.2635  (0=random, 1=perfect)
+Frequency Poisson dev:     0.1507
+Frequency AE:              0.9988
+Severity Gamma dev:        1.6632
+SeveritINFO: Wrote /home/loranos/projects/claims-severity/reports/phase9_final_evaluation.txt
+INFO: Wrote sentinel /home/loranos/projects/claims-severity/data/test_frozen.flag
+==========================================================================================
+PHASE 9 — FINAL EVALUATION ON TEST
+==========================================================================================
+
+Model: LGBM freq × GLM sev × p_has_sev (Phase 6 chosen compound)
+Test rows: 101,702
+p_has_sev: 0.7306
+q_hat (frozen from Phase 8): 0.2714
+
+=== Global metrics on test ===
+Pure premium MAE:          157.16 EUR
+Pure premium AE:           0.9909
+Pure premium Gini:         0.2635  (0=random, 1=perfect)
+Frequency Poisson dev:     0.1507
+Frequency AE:              0.9988
+Severity Gamma dev:        1.6632
+Severity AE:               0.9401
+Conditional CQR coverage:  0.7975  (nominal 0.80)
+
+=== Lift by decile (pure premium) ===
+decile          n         actual      predicted       AE
+     1     10,170      2,261,102      3,317,842   0.6815
+     2     10,170        777,496      1,449,506   0.5364
+     3     10,170        833,144      1,083,733   0.7688
+     4     10,170      1,084,294        848,652   1.2777
+     5     10,171        858,109        664,256   1.2918
+     6     10,170        637,563        501,309   1.2718
+     7     10,170        874,283        354,444   2.4666
+     8     10,170        387,389        224,071   1.7289
+     9     10,170        208,543        118,569   1.7588
+    10     10,171        603,686         41,674  14.4860
+
+=== SHAP top-10 features (LGBM frequency) ===
+   1. BonusMalus_log           mean|SHAP| = 0.2765
+   2. VehAge                   mean|SHAP| = 0.1708
+   3. DrivAge                  mean|SHAP| = 0.1332
+   4. Density_log              mean|SHAP| = 0.0741
+   5. VehPower                 mean|SHAP| = 0.0646
+   6. VehBrand_B12             mean|SHAP| = 0.0471
+   7. VehGas_diesel            mean|SHAP| = 0.0280
+   8. VehAge_zero              mean|SHAP| = 0.0240
+   9. Region_R24               mean|SHAP| = 0.0209
+  10. Region_R82               mean|SHAP| = 0.0117
+
+SHAP summary plot: /home/loranos/projects/claims-severity/reports/phase9_shap_summary.png
+Lift chart:        /home/loranos/projects/claims-severity/reports/phase9_lift_chart.png
+
+=== Fairness — residuals by group (pure premium) ===
+group_type            group          n     mean_resid       ae
+DrivAge_bucket            0      5,790         -71.25   0.5934
+DrivAge_bucket            1     22,324          -8.94   0.8890
+DrivAge_bucket            2     49,826           4.74   1.0608
+DrivAge_bucket            3     20,981         -12.71   0.8375
+DrivAge_bucket            4      2,781         202.82   3.1739
+Area                      A     15,577         -10.50   0.8876
+Area                      B     11,374         -29.89   0.6358
+Area                      C     28,682          -3.65   0.9541
+Area                      D     22,823          15.89   1.1811
+Area                      E     20,546          11.61   1.1390
+Area                      F      2,700         -26.49   0.6711
+Region                  R11     10,422         -11.96   0.8386
+Region                  R24     24,314         -21.34   0.8053
+Region                  R53      6,320         -31.21   0.6952
+Region                  R82     12,658           0.37   1.0039
+Region                  R93     11,977          68.64   1.8748
+
+=== Notes ===
+- Pure premium AE > 1 means model underpredicts on average.
+  At test level, expect similar +10-15% underprediction as val.
+  Documented in Phase 5 (val-tail-shift +7.7%). Not a bug.
+- Gini measures ranking quality (portfolio prioritization),
+  not calibration (measured by AE).
+- Fairness analysis is DESCRIPTIVE, not normative. Groups with
+  high AE or large residuals should be reviewed but are not
+  evidence of discrimination on their own.
+
