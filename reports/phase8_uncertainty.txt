@@ -1,0 +1,51 @@
+==========================================================================================
+PHASE 8 — SEVERITY UNCERTAINTY (quantile + CQR)
+==========================================================================================
+
+Diagnosis of first attempt (2026-10-25):
+  Fitting quantiles on log1p(pure_premium) failsINFO: Wrote /home/loranos/projects/claims-severity/reports/phase8_uncertainty.txt
+==========================================================================================
+PHASE 8 — SEVERITY UNCERTAINTY (quantile + CQR)
+==========================================================================================
+
+Diagnosis of first attempt (2026-10-25):
+  Fitting quantiles on log1p(pure_premium) fails: ~95% mass at 0.
+  Quantile regression predicts 0 everywhere (leaf empirical
+  quantiles are 0). Zero-width intervals, q_hat=0, trivially
+  96% coverage from the zero mass. Vacuous.
+  FIX: fit on severity only (claims > 0), cover conditionally.
+
+Setup (corrected):
+  Target: log(ClaimAmount_sum) for claims only (ClaimAmount > 0)
+  Train claims: 17,417
+  Val claims:   3,755 (cal=1,877 / check=1,878)
+  Quantiles:    0.1 / 0.5 / 0.9 (nominal 80%)
+  Method:       CQR (Romano et al. 2019)
+
+=== Coverage on val-check CLAIMS (conditional on claim > 0) ===
+  Nominal target:      0.8000
+  Raw quantile:        0.7284
+  CQR-calibrated:      0.8009
+  q_hat (log EUR):     0.2714
+
+=== Interpretation ===
+  Raw quantiles UNDER-COVER by 7.2% (72.8% vs 80% target).
+  CQR restores coverage: 80.1% (+0.1% vs target). OK.
+
+=== Severity interval widths (conditional on claim) ===
+  Raw median width (log):  2.0991
+  CQR median width (log):  2.6419
+  Raw median width (EUR):  2,047.57
+  CQR median width (EUR):  2,872.07
+
+  Median predicted sev:    1,165.05 EUR
+  Median observed sev:     1,172.00 EUR
+  Mean observed sev:       2,270.47 EUR
+
+=== Portfolio-level context ===
+  This interval is CONDITIONAL on having a claim.
+  For a specific policy: P(claim) ~ 5% (Phase 6 LGBM freq),
+  so the unconditional pure premium is mostly 0.
+  Compound composition + portfolio aggregation: Phase 9.
+
+OK: test split never evaluated

@@ -4,7 +4,7 @@ UV := uv
 RUFF := uv run ruff
 PYTEST := uv run pytest
 
-.PHONY: help install sync lint format format-check test ci data validate processed eda features baselines gbm tune clean
+.PHONY: help install sync lint format format-check test ci data validate processed eda features baselines gbm tune uncertainty clean
 
 help:  ## Show available targets
 	@echo "Available targets:"
@@ -23,6 +23,7 @@ help:  ## Show available targets
 	@echo "  baselines     Train + evaluate Dummy and GLM baselines"
 	@echo "  gbm           Train + evaluate XGB + LGBM (freq, sev, tweedie)"
 	@echo "  tune          Optuna tune LGBM frequency (15 trials, 3-fold CV)"
+	@echo "  uncertainty   Quantile + CQR intervals, coverage verification"
 	@echo "  clean         Remove caches and build artifacts"
 
 install: sync
@@ -64,6 +65,9 @@ gbm:
 
 tune:
 	$(UV) run python -m scripts.tune_lgbm
+
+uncertainty:
+	$(UV) run python -m scripts.quantify_uncertainty
 
 clean:
 	rm -rf .pytest_cache .ruff_cache htmlcov .coverage
