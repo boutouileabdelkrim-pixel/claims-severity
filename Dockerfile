@@ -1,7 +1,9 @@
 FROM python:3.11-slim
 
+# curl: healthcheck
+# libgomp1: OpenMP runtime for lightgbm, xgboost, scikit-learn
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl && \
+    apt-get install -y --no-install-recommends curl libgomp1 && \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=ghcr.io/astral-sh/uv:0.4.30 /uv /uvx /bin/

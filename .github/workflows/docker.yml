@@ -28,19 +28,35 @@ jobs:
 
       - name: Smoke test /health
         run: |
+          set -u
           docker run -d --name cs-test -p 8000:8000 claims-severity:ci
+          ok=0
           for i in $(seq 1 30); do
-            if curl -sf http://localhost:8000/health > /dev/null; then
+            if curl -sf http://localhost:8000/health > /tmp/health.txt 2>/dev/null; then
               echo "Health OK after $i attempts"
+              ok=1
               break
             fi
             sleep 2
           done
-          RESP=$(curl -sf http://localhost:8000/health)
-          echo "Response: $RESP"
-          test "$RESP" = '{"status":"ok"}'
-          docker stop cs-test
-          docker rm cs-test
+          echo "=== Container logs ==="
+          docker logs cs-test 2>&1 || true
+          echo "=== Container state ==="
+          docker ps -a --filter name=cs-test || true
+          if [ "$ok" = "1" ]; then
+            echo "=== Response ==="
+            cat /tmp/health.txt
+            echo ""
+            RESP=$(cat /tmp/health.txt)
+            test "$RESP" = '{"status":"ok"}'
+            docker stop cs-test
+            docker rm cs-test
+          else
+            echo "FAIL: /health never responded"
+            docker stop cs-test || true
+            docker rm cs-test || true
+            exit 1
+          fi
 
       - name: Docker image size
         if: always()
