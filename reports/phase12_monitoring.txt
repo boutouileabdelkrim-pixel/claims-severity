@@ -1,0 +1,71 @@
+==========================================================================================
+PHASE 12 — DRIFT MONITORING (PSI + KS)
+==========================================================================================
+
+Reference: train (474,609 rows)
+Current:   INFO: Wrote /home/loranos/projects/claims-severity/reports/phase12_monitoring.txt
+INFO: Wrote /home/loranos/projects/claims-severity/reports/phase12_monitoring.json
+==========================================================================================
+PHASE 12 — DRIFT MONITORING (PSI + KS)
+==========================================================================================
+
+Reference: train (474,609 rows)
+Current:   test  (101,702 rows)
+Features:  15 (numeric + engineered + prediction)
+
+--- Interpretation ---
+PSI  < 0.10 : stable (no shift)
+PSI 0.10-0.25 : moderate shift (investigate)
+PSI > 0.25 : significant shift (retrain candidate)
+KS p-value < 0.05 : reject H0 (distributions differ)
+
+--- Note on synthetic drift choice ---
+We avoid DrivAge + shift because pd.cut bins end at 101;
+DrivAge > 100 produces NaN and crashes engineer_features.
+The API schema enforces DrivAge <= 100, so production is safe.
+Documented as a known boundary in reports/phase12_monitoring.md.
+
+--- Conclusion ---
+Real comparison: no significant drift. Test population is
+consistent with training distribution. Model can be served.
+Synthetic drift: 3 significant shifts detected.
+Detector works. Would catch real distribution shift.
+
+.0000e+00       stable
+DrivAge_bucket         0.0000     0.0015   9.9288e-01       stable
+pure_premium           0.0001     0.0041   1.1970e-01       stable
+
+Summary: 15 stable, 0 moderate, 0 significant
+
+=== Synthetic drift: train vs (test + BonusMalus*1.5, Exposure*0.5) ===
+feature                   PSI    KS stat   KS p-value      verdict
+VehPower               0.0001     0.0021   8.6432e-01       stable
+VehAge                 0.0001     0.0030   4.2624e-01       stable
+DrivAge                0.0001     0.0021   8.4002e-01       stable
+BonusMalus             7.8907     0.8227   0.0000e+00  significant
+Density                0.0000     0.0020   9.0227e-01       stable
+Exposure               4.9220     0.6304   0.0000e+00  significant
+BonusMalus_log         7.8907     0.8227   0.0000e+00  significant
+Density_log            0.0000     0.0020   9.0227e-01       stable
+Area_ord               0.0000     0.0012   9.9974e-01       stable
+VehGas_diesel          0.0000     0.0004   1.0000e+00       stable
+VehAge_zero            0.0000     0.0017   9.7520e-01       stable
+VehAge_over_20         0.0000     0.0000   1.0000e+00       stable
+BonusMalus_gt100       0.0000     0.2289   0.0000e+00       stable
+DrivAge_bucket         0.0000     0.0015   9.9288e-01       stable
+pure_premium           0.0168     0.0339   6.7031e-84       stable
+
+Summary: 12 stable, 0 moderate, 3 significant
+
+--- Note on synthetic drift choice ---
+We avoid DrivAge + shift because pd.cut bins end at 101;
+DrivAge > 100 produces NaN and crashes engineer_features.
+The API schema enforces DrivAge <= 100, so production is safe.
+Documented as a known boundary in reports/phase12_monitoring.md.
+
+--- Conclusion ---
+Real comparison: no significant drift. Test population is
+consistent with training distribution. Model can be served.
+Synthetic drift: 3 significant shifts detected.
+Detector works. Would catch real distribution shift.
+

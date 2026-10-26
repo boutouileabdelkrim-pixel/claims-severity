@@ -6,7 +6,7 @@ PYTEST := uv run pytest
 DOCKER_IMAGE := claims-severity
 DOCKER_TAG := latest
 
-.PHONY: help install sync lint format format-check test ci data validate processed eda features baselines gbm tune uncertainty evaluate mlflow docker-build docker-run clean
+.PHONY: help install sync lint format format-check test ci data validate processed eda features baselines gbm tune uncertainty evaluate mlflow docker-build docker-run monitor clean
 
 help:  ## Show available targets
 	@echo "Available targets:"
@@ -30,6 +30,7 @@ help:  ## Show available targets
 	@echo "  mlflow        Log the frozen compound model + artifacts to MLflow"
 	@echo "  docker-build  Build Docker image $(DOCKER_IMAGE):$(DOCKER_TAG)"
 	@echo "  docker-run    Run Docker image on port 8000"
+	@echo "  monitor       PSI + KS drift report (train vs test)"
 	@echo "  clean         Remove caches and build artifacts"
 
 install: sync
@@ -86,6 +87,9 @@ docker-build:
 
 docker-run:
 	docker run --rm -p 8000:8000 --name $(DOCKER_IMAGE) $(DOCKER_IMAGE):$(DOCKER_TAG)
+
+monitor:
+	$(UV) run python -m scripts.monitor_drift
 
 clean:
 	rm -rf .pytest_cache .ruff_cache htmlcov .coverage

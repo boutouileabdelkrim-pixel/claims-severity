@@ -1,0 +1,241 @@
+{
+  "reference": "train",
+  "current": "test",
+  "features": [
+    "VehPower",
+    "VehAge",
+    "DrivAge",
+    "BonusMalus",
+    "Density",
+    "Exposure",
+    "BonusMalus_log",
+    "Density_log",
+    "Area_ord",
+    "VehGas_diesel",
+    "VehAge_zero",
+    "VehAge_over_20",
+    "BonusMalus_gt100",
+    "DrivAge_bucket",
+    "pure_premium"
+  ],
+  "real": [
+    {
+      "feature": "VehPower",
+      "psi": 5.1540530804849196e-05,
+      "ks_stat": 0.002071141051352199,
+      "ks_pvalue": 0.8643194538243473,
+      "verdict": "stable"
+    },
+    {
+      "feature": "VehAge",
+      "psi": 0.00010226411735858351,
+      "ks_stat": 0.003026016939523868,
+      "ks_pvalue": 0.4262445743277812,
+      "verdict": "stable"
+    },
+    {
+      "feature": "DrivAge",
+      "psi": 5.5521656599871e-05,
+      "ks_stat": 0.0021323884631995194,
+      "ks_pvalue": 0.8400179630087609,
+      "verdict": "stable"
+    },
+    {
+      "feature": "BonusMalus",
+      "psi": 1.0288232547696168e-05,
+      "ks_stat": 0.0016998957361145095,
+      "ks_pvalue": 0.9685215576397925,
+      "verdict": "stable"
+    },
+    {
+      "feature": "Density",
+      "psi": 4.531391794568214e-05,
+      "ks_stat": 0.0019647759193568426,
+      "ks_pvalue": 0.902266367147829,
+      "verdict": "stable"
+    },
+    {
+      "feature": "Exposure",
+      "psi": 0.00015830807764867228,
+      "ks_stat": 0.0033211961875658502,
+      "ks_pvalue": 0.31328088648826846,
+      "verdict": "stable"
+    },
+    {
+      "feature": "BonusMalus_log",
+      "psi": 1.0288232547696168e-05,
+      "ks_stat": 0.0016998957361145095,
+      "ks_pvalue": 0.9685215576397925,
+      "verdict": "stable"
+    },
+    {
+      "feature": "Density_log",
+      "psi": 4.531391794568214e-05,
+      "ks_stat": 0.0019647759193568426,
+      "ks_pvalue": 0.902266367147829,
+      "verdict": "stable"
+    },
+    {
+      "feature": "Area_ord",
+      "psi": 1.520506966529257e-05,
+      "ks_stat": 0.0011978611304072073,
+      "ks_pvalue": 0.9997400648816769,
+      "verdict": "stable"
+    },
+    {
+      "feature": "VehGas_diesel",
+      "psi": 0.0,
+      "ks_stat": 0.00044212522493836115,
+      "ks_pvalue": 1.0,
+      "verdict": "stable"
+    },
+    {
+      "feature": "VehAge_zero",
+      "psi": 0.0,
+      "ks_stat": 0.0016574438644617606,
+      "ks_pvalue": 0.9751953056166454,
+      "verdict": "stable"
+    },
+    {
+      "feature": "VehAge_over_20",
+      "psi": 0.0,
+      "ks_stat": 7.110407159727217e-07,
+      "ks_pvalue": 1.0,
+      "verdict": "stable"
+    },
+    {
+      "feature": "BonusMalus_gt100",
+      "psi": 0.0,
+      "ks_stat": 0.0003083319578442989,
+      "ks_pvalue": 1.0,
+      "verdict": "stable"
+    },
+    {
+      "feature": "DrivAge_bucket",
+      "psi": 1.4280686650150822e-05,
+      "ks_stat": 0.0014796505169591967,
+      "ks_pvalue": 0.9928753480677933,
+      "verdict": "stable"
+    },
+    {
+      "feature": "pure_premium",
+      "psi": 0.00012473633700152973,
+      "ks_stat": 0.0040978831508498015,
+      "ks_pvalue": 0.11970337047270929,
+      "verdict": "stable"
+    }
+  ],
+  "synthetic_drift": [
+    {
+      "feature": "VehPower",
+      "psi": 5.1540530804849196e-05,
+      "ks_stat": 0.002071141051352199,
+      "ks_pvalue": 0.8643194538243473,
+      "verdict": "stable"
+    },
+    {
+      "feature": "VehAge",
+      "psi": 0.00010226411735858351,
+      "ks_stat": 0.003026016939523868,
+      "ks_pvalue": 0.4262445743277812,
+      "verdict": "stable"
+    },
+    {
+      "feature": "DrivAge",
+      "psi": 5.5521656599871e-05,
+      "ks_stat": 0.0021323884631995194,
+      "ks_pvalue": 0.8400179630087609,
+      "verdict": "stable"
+    },
+    {
+      "feature": "BonusMalus",
+      "psi": 7.8907429564919,
+      "ks_stat": 0.8226961562043703,
+      "ks_pvalue": 0.0,
+      "verdict": "significant"
+    },
+    {
+      "feature": "Density",
+      "psi": 4.531391794568214e-05,
+      "ks_stat": 0.0019647759193568426,
+      "ks_pvalue": 0.902266367147829,
+      "verdict": "stable"
+    },
+    {
+      "feature": "Exposure",
+      "psi": 4.922036676867384,
+      "ks_stat": 0.6303567786616098,
+      "ks_pvalue": 0.0,
+      "verdict": "significant"
+    },
+    {
+      "feature": "BonusMalus_log",
+      "psi": 7.8907429564919,
+      "ks_stat": 0.8226961562043703,
+      "ks_pvalue": 0.0,
+      "verdict": "significant"
+    },
+    {
+      "feature": "Density_log",
+      "psi": 4.531391794568214e-05,
+      "ks_stat": 0.0019647759193568426,
+      "ks_pvalue": 0.902266367147829,
+      "verdict": "stable"
+    },
+    {
+      "feature": "Area_ord",
+      "psi": 1.520506966529257e-05,
+      "ks_stat": 0.0011978611304072073,
+      "ks_pvalue": 0.9997400648816769,
+      "verdict": "stable"
+    },
+    {
+      "feature": "VehGas_diesel",
+      "psi": 0.0,
+      "ks_stat": 0.00044212522493836115,
+      "ks_pvalue": 1.0,
+      "verdict": "stable"
+    },
+    {
+      "feature": "VehAge_zero",
+      "psi": 0.0,
+      "ks_stat": 0.0016574438644617606,
+      "ks_pvalue": 0.9751953056166454,
+      "verdict": "stable"
+    },
+    {
+      "feature": "VehAge_over_20",
+      "psi": 0.0,
+      "ks_stat": 7.110407159727217e-07,
+      "ks_pvalue": 1.0,
+      "verdict": "stable"
+    },
+    {
+      "feature": "BonusMalus_gt100",
+      "psi": 0.0,
+      "ks_stat": 0.22894969639951346,
+      "ks_pvalue": 0.0,
+      "verdict": "stable"
+    },
+    {
+      "feature": "DrivAge_bucket",
+      "psi": 1.4280686650150822e-05,
+      "ks_stat": 0.0014796505169591967,
+      "ks_pvalue": 0.9928753480677933,
+      "verdict": "stable"
+    },
+    {
+      "feature": "pure_premium",
+      "psi": 0.016848874517095484,
+      "ks_stat": 0.033867623518730516,
+      "ks_pvalue": 6.703146064707887e-84,
+      "verdict": "stable"
+    }
+  ],
+  "synthetic_drift_spec": "BonusMalus * 1.5 (clip 300), Exposure * 0.3 (clip 0.01)",
+  "thresholds": {
+    "psi_stable": 0.1,
+    "psi_moderate": 0.25,
+    "ks_pvalue_threshold": 0.05
+  }
+}
