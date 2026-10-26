@@ -1,0 +1,48 @@
+name: Docker
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  docker-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          load: true
+          tags: claims-severity:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Smoke test /health
+        run: |
+          docker run -d --name cs-test -p 8000:8000 claims-severity:ci
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8000/health > /dev/null; then
+              echo "Health OK after $i attempts"
+              break
+            fi
+            sleep 2
+          done
+          RESP=$(curl -sf http://localhost:8000/health)
+          echo "Response: $RESP"
+          test "$RESP" = '{"status":"ok"}'
+          docker stop cs-test
+          docker rm cs-test
+
+      - name: Docker image size
+        if: always()
+        run: |
+          docker images claims-severity:ci --format "Size: {{.Size}}"
