@@ -99,10 +99,3 @@ frozen model. Phase 11 (FastAPI) serves the frozen model. Phase 12
 (monitoring) simulates drift on a different slice. Phase 13 writes
 the Model Card referencing this report.
 
-## Portfolio message
-
-"I touched the test set once, measured everything a senior actuary
-would want (Gini, lift, coverage, SHAP, fairness), documented where
-the model fails and why, and froze the test set so nothing downstream
-can cherry-pick." That is the kind of discipline that separates a
-portfolio from a notebook dump.
